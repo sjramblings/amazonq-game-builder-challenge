@@ -1,18 +1,29 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     padding: 0;
     color: rgba(255, 255, 255, 0.87);
-    background-color: #000000; 
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
 }
 
 #app {
     width: 100%;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#game-container {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px;
 }
 
 .spritePosition {
@@ -29,20 +40,57 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.87);
     cursor: pointer;
     transition: all 0.3s;
+    border-radius: 4px;
+}
 
-    &:hover {
-        border: 1px solid #0ec3c9;
-        color: #0ec3c9;
-    }
+.button:hover {
+    border: 1px solid #0ec3c9;
+    color: #0ec3c9;
+}
 
-    &:active {
-        background-color: #0ec3c9;
-    }
+.button:active {
+    background-color: #0ec3c9;
+}
 
-    /* Disabled styles */
-    &:disabled {
-        cursor: not-allowed;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: rgba(255, 255, 255, 0.3);
+.button:disabled {
+    cursor: not-allowed;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Tetris Game Specific Styles */
+canvas {
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #game-container {
+        padding: 10px;
     }
+    
+    canvas {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }

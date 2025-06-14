@@ -1,17 +1,31 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any unauthenticated user can "create", "read", "update", 
-and "delete" any "Todo" records.
-=========================================================================*/
+/*== TETRIS GAME SCHEMA ===============================================
+This schema defines the data models for our Tetris game:
+- Todo: Original model (keeping for compatibility)
+- Score: Stores user scores with authentication
+=====================================================================*/
 const schema = a.schema({
   Todo: a
     .model({
       content: a.string(),
     })
     .authorization((allow) => [allow.guest()]),
+  
+  Score: a
+    .model({
+      playerName: a.string().required(),
+      score: a.integer().required(),
+      level: a.integer().required(),
+      linesCleared: a.integer().required(),
+      gameDate: a.datetime().required(),
+      userId: a.string(), // Optional: for authenticated users
+    })
+    .authorization((allow) => [
+      allow.authenticated().to(['create', 'read']),
+      allow.guest().to(['create', 'read']),
+      allow.owner().to(['read', 'update', 'delete'])
+    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
