@@ -15,9 +15,11 @@ const schema = a.schema({
       userId: a.string(), // Optional: for authenticated users
     })
     .authorization((allow) => [
-      // Allow authenticated users to create and read all scores
+      // Allow public access for creating and reading scores
+      allow.publicApiKey().to(['create', 'read']),
+      // Allow authenticated users full access
       allow.authenticated().to(['create', 'read']),
-      // Allow unauthenticated users (guests) to create and read scores
+      // Allow guest users to create and read
       allow.guest().to(['create', 'read'])
     ]),
 });
@@ -27,7 +29,10 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'identityPool',
+    defaultAuthorizationMode: 'apiKey',
+    apiKeyAuthorizationMode: {
+      expiresInDays: 365,
+    },
   },
 });
 

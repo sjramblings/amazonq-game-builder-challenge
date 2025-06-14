@@ -20,13 +20,15 @@ export class ScoreService {
         level: gameScore.level,
         linesCleared: gameScore.linesCleared,
         gameDate: new Date().toISOString(),
-        userId: gameScore.userId || undefined,
+        userId: gameScore.userId || null,
       };
+
+      console.log('Attempting to save score:', scoreData);
 
       const { data, errors } = await client.models.Score.create(scoreData);
       
       if (errors && errors.length > 0) {
-        console.error('Error saving score:', errors);
+        console.error('GraphQL errors saving score:', errors);
         return false;
       }
 
@@ -34,7 +36,31 @@ export class ScoreService {
       return true;
     } catch (error) {
       console.error('Failed to save score:', error);
-      return false;
+      
+      // Try alternative approach with minimal data
+      try {
+        console.log('Trying fallback save approach...');
+        const fallbackData = {
+          playerName: gameScore.playerName,
+          score: gameScore.score,
+          level: gameScore.level,
+          linesCleared: gameScore.linesCleared,
+          gameDate: new Date().toISOString(),
+        };
+        
+        const { data: fallbackResult, errors: fallbackErrors } = await client.models.Score.create(fallbackData);
+        
+        if (fallbackErrors && fallbackErrors.length > 0) {
+          console.error('Fallback save also failed:', fallbackErrors);
+          return false;
+        }
+        
+        console.log('Fallback save successful:', fallbackResult);
+        return true;
+      } catch (fallbackError) {
+        console.error('Both save attempts failed:', fallbackError);
+        return false;
+      }
     }
   }
 
