@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { Amplify } from 'aws-amplify';
+import { signOut } from 'aws-amplify/auth';
 import { IRefPhaserGame, PhaserGame } from './PhaserGame';
 import AuthComponent from './components/AuthComponent';
 import GameOverModal from './components/GameOverModal';
@@ -18,6 +19,7 @@ function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [showAuth, setShowAuth] = useState(true);
+    const [isSigningOut, setIsSigningOut] = useState(false);
     
     // Game state
     const [gameOverData, setGameOverData] = useState<any>(null);
@@ -42,12 +44,29 @@ function App() {
         setShowAuth(false);
     };
 
-    const handleSignOut = () => {
-        setIsAuthenticated(false);
-        setCurrentUser(null);
-        setShowAuth(true);
-        setShowGameOver(false);
-        setShowScoreboard(false);
+    const handleSignOut = async () => {
+        setIsSigningOut(true);
+        try {
+            // Actually sign out from AWS Amplify
+            await signOut();
+            
+            // Update local state
+            setIsAuthenticated(false);
+            setCurrentUser(null);
+            setShowAuth(true);
+            setShowGameOver(false);
+            setShowScoreboard(false);
+        } catch (error) {
+            console.error('Error signing out:', error);
+            // Still update local state even if sign out fails
+            setIsAuthenticated(false);
+            setCurrentUser(null);
+            setShowAuth(true);
+            setShowGameOver(false);
+            setShowScoreboard(false);
+        } finally {
+            setIsSigningOut(false);
+        }
     };
 
     const handleGameRestart = () => {
@@ -92,8 +111,9 @@ function App() {
                     <button 
                         className="status-button signout"
                         onClick={handleSignOut}
+                        disabled={isSigningOut}
                     >
-                        Sign Out
+                        {isSigningOut ? 'Signing Out...' : 'Sign Out'}
                     </button>
                 </div>
             </div>
@@ -196,6 +216,13 @@ function App() {
 
                 .status-button.signout:hover {
                     box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+                }
+
+                .status-button:disabled {
+                    background: #666 !important;
+                    cursor: not-allowed !important;
+                    transform: none !important;
+                    box-shadow: none !important;
                 }
 
                 #game-container {

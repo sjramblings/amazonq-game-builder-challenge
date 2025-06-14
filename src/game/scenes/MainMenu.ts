@@ -7,8 +7,7 @@ export class MainMenu extends Scene
     background: GameObjects.Image;
     logo: GameObjects.Image;
     title: GameObjects.Text;
-    tetrisButton: GameObjects.Text;
-    originalGameButton: GameObjects.Text;
+    awsTetricsButton: GameObjects.Text;
     logoTween: Phaser.Tweens.Tween | null;
 
     constructor ()
@@ -22,58 +21,51 @@ export class MainMenu extends Scene
 
         this.logo = this.add.image(512, 200, 'logo').setDepth(100);
 
-        this.title = this.add.text(512, 320, 'Game Selection', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
+        this.title = this.add.text(512, 320, '☁️ AWS TETRICS ☁️', {
+            fontFamily: 'Arial Black', fontSize: 48, color: '#FF9900',
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
-        // Tetris Game Button
-        this.tetrisButton = this.add.text(512, 420, '🧩 Play Tetris', {
-            fontFamily: 'Arial Black', fontSize: 32, color: '#00ff00',
+        // AWS Tetrics Game Button (Main and only option)
+        this.awsTetricsButton = this.add.text(512, 420, '🚀 START GAME 🚀', {
+            fontFamily: 'Arial Black', fontSize: 40, color: '#FF9900',
             stroke: '#000000', strokeThickness: 6,
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
-        this.tetrisButton.setInteractive({ useHandCursor: true });
-        this.tetrisButton.on('pointerdown', () => this.startTetris());
-        this.tetrisButton.on('pointerover', () => {
-            this.tetrisButton.setScale(1.1);
-            this.tetrisButton.setColor('#ffff00');
+        this.awsTetricsButton.setInteractive({ useHandCursor: true });
+        this.awsTetricsButton.on('pointerdown', () => this.startAWSTetrics());
+        this.awsTetricsButton.on('pointerover', () => {
+            this.awsTetricsButton.setScale(1.1);
+            this.awsTetricsButton.setColor('#FFFF00');
         });
-        this.tetrisButton.on('pointerout', () => {
-            this.tetrisButton.setScale(1);
-            this.tetrisButton.setColor('#00ff00');
-        });
-
-        // Original Game Button
-        this.originalGameButton = this.add.text(512, 500, '⭐ Original Demo', {
-            fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 4,
-            align: 'center'
-        }).setOrigin(0.5).setDepth(100);
-
-        this.originalGameButton.setInteractive({ useHandCursor: true });
-        this.originalGameButton.on('pointerdown', () => this.changeScene());
-        this.originalGameButton.on('pointerover', () => {
-            this.originalGameButton.setScale(1.1);
-            this.originalGameButton.setColor('#ffff00');
-        });
-        this.originalGameButton.on('pointerout', () => {
-            this.originalGameButton.setScale(1);
-            this.originalGameButton.setColor('#ffffff');
+        this.awsTetricsButton.on('pointerout', () => {
+            this.awsTetricsButton.setScale(1);
+            this.awsTetricsButton.setColor('#FF9900');
         });
 
         // Instructions
-        this.add.text(512, 600, 'Click on a game to start playing!', {
-            fontFamily: 'Arial', fontSize: 18, color: '#cccccc',
+        this.add.text(512, 520, 'AWS Community Competition Entry', {
+            fontFamily: 'Arial', fontSize: 20, color: '#FF9900',
+            align: 'center',
+            fontStyle: 'italic'
+        }).setOrigin(0.5).setDepth(100);
+
+        this.add.text(512, 550, 'Build your cloud infrastructure with AWS services!', {
+            fontFamily: 'Arial', fontSize: 16, color: '#cccccc',
+            align: 'center'
+        }).setOrigin(0.5).setDepth(100);
+
+        this.add.text(512, 580, 'Click START GAME to begin your AWS journey!', {
+            fontFamily: 'Arial', fontSize: 16, color: '#cccccc',
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
         EventBus.emit('current-scene-ready', this);
     }
     
-    startTetris ()
+    startAWSTetrics ()
     {
         if (this.logoTween)
         {
@@ -81,18 +73,7 @@ export class MainMenu extends Scene
             this.logoTween = null;
         }
 
-        this.scene.start('TetrisGame');
-    }
-
-    changeScene ()
-    {
-        if (this.logoTween)
-        {
-            this.logoTween.stop();
-            this.logoTween = null;
-        }
-
-        this.scene.start('Game');
+        this.scene.start('AWSTetricsGame');
     }
 
     moveLogo (reactCallback: ({ x, y }: { x: number, y: number }) => void)
