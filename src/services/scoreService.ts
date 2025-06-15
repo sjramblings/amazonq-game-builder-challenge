@@ -1,4 +1,5 @@
 import { generateClient } from 'aws-amplify/data';
+import { getUserDisplayInfo } from '../utils/userUtils';
 import type { Schema } from '../../amplify/data/resource';
 
 const client = generateClient<Schema>();
@@ -12,10 +13,21 @@ export interface GameScore {
 }
 
 export class ScoreService {
-  static async saveScore(gameScore: GameScore): Promise<boolean> {
+  static async saveScore(gameScore: GameScore, currentUser?: any): Promise<boolean> {
     try {
+      // Get the display name for the current user
+      let playerName = gameScore.playerName;
+      if (currentUser) {
+        try {
+          const displayInfo = await getUserDisplayInfo(currentUser);
+          playerName = displayInfo.displayName;
+        } catch (error) {
+          console.log('Could not get display name, using provided name:', error);
+        }
+      }
+
       const scoreData = {
-        playerName: gameScore.playerName,
+        playerName: playerName,
         score: gameScore.score,
         level: gameScore.level,
         linesCleared: gameScore.linesCleared,
@@ -41,7 +53,7 @@ export class ScoreService {
       try {
         console.log('Trying fallback save approach...');
         const fallbackData = {
-          playerName: gameScore.playerName,
+          playerName: gameScore.playerName, // Use original name as fallback
           score: gameScore.score,
           level: gameScore.level,
           linesCleared: gameScore.linesCleared,

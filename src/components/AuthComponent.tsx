@@ -19,6 +19,7 @@ export default function AuthComponent({ onAuthStateChange }: AuthComponentProps)
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [confirmationCode, setConfirmationCode] = useState('');
 
   useEffect(() => {
@@ -39,6 +40,12 @@ export default function AuthComponent({ onAuthStateChange }: AuthComponentProps)
     setLoading(true);
     setError('');
 
+    if (authMode === 'signup' && !username.trim()) {
+      setError('Please enter a display name');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { isSignUpComplete, userId, nextStep } = await signUp({
         username: email,
@@ -46,6 +53,8 @@ export default function AuthComponent({ onAuthStateChange }: AuthComponentProps)
         options: {
           userAttributes: {
             email,
+            // Store username in nickname field (available in default Cognito)
+            nickname: username.trim(),
           },
         },
       });
@@ -159,6 +168,23 @@ export default function AuthComponent({ onAuthStateChange }: AuthComponentProps)
                 placeholder="Enter your email"
               />
             </div>
+            {authMode === 'signup' && (
+              <div className="form-group">
+                <label htmlFor="username">Display Name:</label>
+                <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  placeholder="Choose your display name"
+                  maxLength={20}
+                  pattern="[a-zA-Z0-9_\s]+"
+                  title="Only letters, numbers, underscores, and spaces allowed"
+                />
+                <small className="input-help">This name will appear on the leaderboard</small>
+              </div>
+            )}
             <div className="form-group">
               <label htmlFor="password">Password:</label>
               <input
@@ -301,6 +327,14 @@ export default function AuthComponent({ onAuthStateChange }: AuthComponentProps)
           border-color: #2a5298;
           background: white;
           box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        }
+
+        .input-help {
+          display: block;
+          margin-top: 5px;
+          color: #666;
+          font-size: 12px;
+          font-style: italic;
         }
 
         .auth-button {

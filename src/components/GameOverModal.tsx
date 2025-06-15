@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ScoreService, GameScore } from '../services/scoreService';
+import { getUserDisplayInfo } from '../utils/userUtils';
 
 interface GameOverModalProps {
   isVisible: boolean;
@@ -37,12 +38,22 @@ export default function GameOverModal({
       setSaveError('');
       setIsSaving(false);
       
-      // Set default player name
-      if (currentUser?.username) {
-        setPlayerName(currentUser.username);
-      } else {
-        setPlayerName('');
-      }
+      // Pre-populate player name with user's display name
+      const initializePlayerName = async () => {
+        if (currentUser) {
+          try {
+            const displayInfo = await getUserDisplayInfo(currentUser);
+            setPlayerName(displayInfo.displayName);
+          } catch (error) {
+            console.log('Could not get display name:', error);
+            setPlayerName(currentUser.username === 'Guest' ? 'Guest Player' : 'Player');
+          }
+        } else {
+          setPlayerName('Guest Player');
+        }
+      };
+      
+      initializePlayerName();
 
       // Check if this is a high score
       checkHighScore();
@@ -76,7 +87,7 @@ export default function GameOverModal({
     };
 
     try {
-      const success = await ScoreService.saveScore(gameScore);
+      const success = await ScoreService.saveScore(gameScore, currentUser);
       
       if (success) {
         setScoreSaved(true);

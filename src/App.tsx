@@ -8,6 +8,7 @@ import AuthComponent from './components/AuthComponent';
 import GameOverModal from './components/GameOverModal';
 import Scoreboard from './components/Scoreboard';
 import { EventBus } from './game/EventBus';
+import { getUserDisplayInfo, getQuickDisplayName } from './utils/userUtils';
 import outputs from '../amplify_outputs.json';
 
 Amplify.configure(outputs);
@@ -18,6 +19,7 @@ function App() {
     // Authentication state
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const [userDisplayName, setUserDisplayName] = useState('');
     const [showAuth, setShowAuth] = useState(true);
     const [isSigningOut, setIsSigningOut] = useState(false);
     
@@ -38,10 +40,23 @@ function App() {
         };
     }, []);
 
-    const handleAuthStateChange = (authenticated: boolean, user: any) => {
+    const handleAuthStateChange = async (authenticated: boolean, user: any) => {
         setIsAuthenticated(authenticated);
         setCurrentUser(user);
         setShowAuth(false);
+        
+        // Get friendly display name
+        if (user) {
+            try {
+                const displayInfo = await getUserDisplayInfo(user);
+                setUserDisplayName(displayInfo.displayName);
+            } catch (error) {
+                // Fallback to quick display name
+                setUserDisplayName(getQuickDisplayName(user));
+            }
+        } else {
+            setUserDisplayName('');
+        }
     };
 
     const handleSignOut = async () => {
@@ -53,6 +68,7 @@ function App() {
             // Update local state
             setIsAuthenticated(false);
             setCurrentUser(null);
+            setUserDisplayName('');
             setShowAuth(true);
             setShowGameOver(false);
             setShowScoreboard(false);
@@ -61,6 +77,7 @@ function App() {
             // Still update local state even if sign out fails
             setIsAuthenticated(false);
             setCurrentUser(null);
+            setUserDisplayName('');
             setShowAuth(true);
             setShowGameOver(false);
             setShowScoreboard(false);
@@ -96,7 +113,7 @@ function App() {
             {/* User Status Bar */}
             <div className="user-status-bar">
                 <div className="user-info">
-                    <span>Welcome, {currentUser?.username || 'Guest'}!</span>
+                    <span>Welcome, {userDisplayName || 'Player'}!</span>
                     {isAuthenticated && (
                         <span className="auth-badge">Authenticated</span>
                     )}
