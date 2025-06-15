@@ -132,7 +132,7 @@ export default function GameOverModal({
                 <img 
                   src={lastServiceFact.iconPath} 
                   alt={lastServiceFact.service}
-                  className="aws-service-svg"
+                  className="aws-service-icon"
                 />
               </div>
               <div className="service-info">
@@ -326,10 +326,10 @@ export default function GameOverModal({
           border: 2px solid rgba(255, 153, 0, 0.3);
         }
 
-        .aws-service-svg {
+        .aws-service-icon {
           width: 36px;
           height: 36px;
-          filter: brightness(0) saturate(100%) invert(60%) sepia(98%) saturate(1352%) hue-rotate(15deg) brightness(101%) contrast(101%);
+
         }
 
         .service-info {
@@ -520,7 +520,7 @@ export default function GameOverModal({
             font-size: 28px;
           }
 
-          .aws-service-svg {
+          .aws-service-icon {
             width: 32px;
             height: 32px;
           }
