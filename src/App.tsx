@@ -27,16 +27,24 @@ function App() {
     const [gameOverData, setGameOverData] = useState<any>(null);
     const [showGameOver, setShowGameOver] = useState(false);
     const [showScoreboard, setShowScoreboard] = useState(false);
+    const [lastServiceFact, setLastServiceFact] = useState<any>(null);
 
     useEffect(() => {
         // Listen for game over events from Tetris
         EventBus.on('game-over', (data: any) => {
             setGameOverData(data);
+            setLastServiceFact(data.lastService);
             setShowGameOver(true);
+        });
+
+        // Listen for restart requests
+        EventBus.on('restart-game', () => {
+            handleGameRestart();
         });
 
         return () => {
             EventBus.removeListener('game-over');
+            EventBus.removeListener('restart-game');
         };
     }, []);
 
@@ -87,14 +95,18 @@ function App() {
     };
 
     const handleGameRestart = () => {
-        // Restart the Tetris game
-        if (phaserRef.current?.scene) {
-            const scene = phaserRef.current.scene;
-            if (scene.scene.key === 'TetrisGame') {
-                scene.scene.restart();
-            } else {
-                scene.scene.start('TetrisGame');
-            }
+        // Close the game over modal first
+        setShowGameOver(false);
+        setGameOverData(null);
+        setLastServiceFact(null);
+        
+        // Restart the AWS Tetrics game
+        if (phaserRef.current?.game) {
+            const game = phaserRef.current.game;
+            
+            // Stop the current scene and restart it
+            game.scene.stop('AWSTetricsGame');
+            game.scene.start('AWSTetricsGame');
         }
     };
 
@@ -147,6 +159,7 @@ function App() {
                 level={gameOverData?.level || 1}
                 lines={gameOverData?.lines || 0}
                 currentUser={currentUser}
+                lastServiceFact={lastServiceFact}
                 onRestart={handleGameRestart}
                 onClose={() => setShowGameOver(false)}
                 onShowScoreboard={() => {

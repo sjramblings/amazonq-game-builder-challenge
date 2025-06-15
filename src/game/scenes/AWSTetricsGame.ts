@@ -1,5 +1,6 @@
 import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
+import { getRandomServiceFact } from '../../data/awsServiceFacts';
 
 // AWS-themed Tetris pieces with service names and colors
 const AWS_TETRIS_PIECES = {
@@ -65,6 +66,7 @@ export class AWSTetricsGame extends Scene {
     private board: number[][];
     private currentPiece: AWSTetricsePiece | null = null;
     private nextPiece: AWSTetricsePiece | null = null;
+    private lastPlacedService: keyof typeof AWS_TETRIS_PIECES | null = null;
     private score: number = 0;
     private level: number = 1;
     private lines: number = 0;
@@ -187,7 +189,7 @@ export class AWSTetricsGame extends Scene {
         const scale = this.getUIScale();
         
         // AWS Tetrics Title
-        this.awsLogoText = this.add.text(this.scale.width / 2, this.getTitleY(), '☁️ AWS TETRICS ☁️', { 
+        this.awsLogoText = this.add.text(this.scale.width / 2, this.getTitleY(), '☁️ AWS TETRIS ☁️', { 
             fontSize: this.getTitleFontSize() + 'px', 
             color: '#FF9900',
             fontFamily: 'Arial Black',
@@ -435,6 +437,9 @@ export class AWSTetricsGame extends Scene {
     private placePiece() {
         if (!this.currentPiece) return;
 
+        // Track the last placed service for the fact display
+        this.lastPlacedService = this.currentPiece.type;
+
         for (let y = 0; y < this.currentPiece.shape.length; y++) {
             for (let x = 0; x < this.currentPiece.shape[y].length; x++) {
                 if (this.currentPiece.shape[y][x]) {
@@ -493,20 +498,48 @@ export class AWSTetricsGame extends Scene {
         this.gameOver = true;
         this.gameOverText.setVisible(true);
         
-        // Emit game over event with score data
+        // Get the AWS service fact for the last placed service
+        const serviceFact = this.lastPlacedService ? getRandomServiceFact(this.lastPlacedService) : null;
+        
+        // Emit game over event with score data and service fact
         EventBus.emit('game-over', {
             score: this.score,
             level: this.level,
-            lines: this.lines
+            lines: this.lines,
+            lastService: serviceFact
         });
     }
 
-    private restartGame() {
+    public restartGame() {
+        // Reset all game state
+        this.gameOver = false;
+        this.isPaused = false;
+        this.score = 0;
+        this.level = 1;
+        this.lines = 0;
+        this.dropTime = 1000;
+        this.lastPlacedService = null;
+        
+        // Hide game over text
         this.gameOverText.setVisible(false);
+        this.pauseText.setVisible(false);
+        
+        // Reset board and UI
         this.initializeBoard();
         this.updateUI();
         this.spawnNewPiece();
         this.render();
+        
+        // Restart the drop timer
+        if (this.dropTimer) {
+            this.dropTimer.destroy();
+        }
+        this.dropTimer = this.time.addEvent({
+            delay: this.dropTime,
+            callback: this.dropPiece,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     private render() {

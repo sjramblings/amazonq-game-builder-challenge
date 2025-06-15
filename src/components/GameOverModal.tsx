@@ -10,6 +10,7 @@ interface GameOverModalProps {
   level: number;
   lines: number;
   currentUser: any;
+  lastServiceFact: any;
   onRestart: () => void;
   onClose: () => void;
   onShowScoreboard: () => void;
@@ -21,6 +22,7 @@ export default function GameOverModal({
   level,
   lines,
   currentUser,
+  lastServiceFact,
   onRestart,
   onClose,
   onShowScoreboard
@@ -132,16 +134,25 @@ export default function GameOverModal({
           </div>
         </div>
 
+        {/* AWS Service Fact Section */}
+        {lastServiceFact && (
+          <div className="aws-service-fact">
+            <div className="fact-header">
+              <span className="service-icon">{lastServiceFact.icon}</span>
+              <div className="service-info">
+                <h3>{lastServiceFact.service}</h3>
+                <span className="service-category">{lastServiceFact.category} • Since {lastServiceFact.launchYear}</span>
+              </div>
+            </div>
+            <div className="fact-content">
+              <h4>💡 Did you know?</h4>
+              <p>{lastServiceFact.fact}</p>
+            </div>
+          </div>
+        )}
+
         {!scoreSaved ? (
           <div className="save-score-section">
-            <h3>Save Your Score</h3>
-            <div className="player-name-display">
-              <label>Playing as:</label>
-              <div className="player-name-value">{playerName}</div>
-              <small className="player-name-note">
-                Display name set during account creation
-              </small>
-            </div>
             
             {saveError && (
               <div className="error-message">{saveError}</div>
@@ -187,30 +198,34 @@ export default function GameOverModal({
           background: rgba(0, 0, 0, 0.9);
           display: flex;
           justify-content: center;
-          align-items: center;
+          align-items: flex-start;
           z-index: 1500;
-          padding: 20px;
+          padding: 15px;
+          overflow-y: auto;
         }
 
         .game-over-modal {
           background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
           border-radius: 16px;
-          padding: 30px;
+          padding: 25px;
           width: 100%;
-          max-width: 500px;
+          max-width: 650px;
+          max-height: 90vh;
+          overflow-y: auto;
+          margin: auto;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
           border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .game-over-header {
           text-align: center;
-          margin-bottom: 30px;
+          margin-bottom: 20px;
         }
 
         .game-over-header h2 {
           color: #e74c3c;
-          font-size: 36px;
-          margin: 0 0 15px 0;
+          font-size: 30px;
+          margin: 0 0 10px 0;
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
@@ -234,17 +249,22 @@ export default function GameOverModal({
         .game-stats {
           background: rgba(0, 0, 0, 0.3);
           border-radius: 12px;
-          padding: 20px;
+          padding: 25px;
           margin-bottom: 30px;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 20px;
         }
 
         .stat-item {
           display: flex;
-          justify-content: space-between;
+          flex-direction: column;
           align-items: center;
-          margin-bottom: 15px;
-          padding: 10px 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 15px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          text-align: center;
         }
 
         .stat-item:last-child {
@@ -254,18 +274,101 @@ export default function GameOverModal({
 
         .stat-label {
           color: #bdc3c7;
+          font-size: 14px;
+          margin-bottom: 8px;
+          font-weight: 500;
+        }
           font-size: 16px;
         }
 
         .stat-value {
           color: white;
-          font-size: 20px;
+          font-size: 24px;
           font-weight: bold;
         }
 
         .stat-value.score {
           color: #f39c12;
-          font-size: 24px;
+          font-size: 28px;
+        }
+
+        .aws-service-fact {
+          background: linear-gradient(135deg, rgba(255, 153, 0, 0.1), rgba(255, 153, 0, 0.05));
+          border: 2px solid rgba(255, 153, 0, 0.3);
+          border-radius: 12px;
+          padding: 25px;
+          margin: 25px 0;
+          animation: factSlideIn 0.5s ease-out;
+        }
+
+        @keyframes factSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .fact-header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 20px;
+          gap: 20px;
+        }
+
+        .service-icon {
+          font-size: 36px;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 12px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 60px;
+          height: 60px;
+          flex-shrink: 0;
+        }
+
+        .service-info {
+          flex: 1;
+        }
+
+        .service-info h3 {
+          color: #FF9900;
+          margin: 0 0 8px 0;
+          font-size: 22px;
+          font-weight: bold;
+        }
+
+        .service-category {
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 14px;
+          font-style: italic;
+        }
+
+        .fact-content {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 10px;
+          padding: 20px;
+        }
+
+        .fact-content h4 {
+          color: #3498db;
+          margin: 0 0 15px 0;
+          font-size: 18px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .fact-content p {
+          color: #ecf0f1;
+          line-height: 1.7;
+          margin: 0;
+          font-size: 15px;
         }
 
         .save-score-section {
@@ -358,18 +461,18 @@ export default function GameOverModal({
         }
 
         .action-buttons {
-          display: flex;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
           gap: 15px;
-          flex-wrap: wrap;
+          margin-top: 30px;
         }
 
         .action-buttons button {
-          flex: 1;
-          min-width: 120px;
-          padding: 12px 20px;
+          min-width: 180px;
+          padding: 14px 24px;
           border: none;
           border-radius: 8px;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: bold;
           cursor: pointer;
           transition: all 0.3s;
