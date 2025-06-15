@@ -80,6 +80,7 @@ export class AWSTetricsGame extends Scene {
     private lines: number = 0;
     private dropTime: number = 0;
     private dropInterval: number = 1000;
+    private dropTimer: Phaser.Time.TimerEvent | null = null;
     private gameOver: boolean = false;
     private isPaused: boolean = false;
     
@@ -578,14 +579,14 @@ export class AWSTetricsGame extends Scene {
                         this.boardGraphics,
                         this.BOARD_X + x * this.BLOCK_SIZE,
                         this.BOARD_Y + y * this.BLOCK_SIZE,
-                        this.board[y][x].color
+                        this.board[y][x]!.color
                     );
                     
                     // Add service icon
                     this.addServiceIcon(
                         this.BOARD_X + x * this.BLOCK_SIZE,
                         this.BOARD_Y + y * this.BLOCK_SIZE,
-                        this.board[y][x].serviceType
+                        this.board[y][x]!.serviceType
                     );
                 }
             }

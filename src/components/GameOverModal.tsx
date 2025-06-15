@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScoreService } from '../services/scoreService';
-import { GameScore } from '../types/GameScore';
+
+import { ScoreService, GameScore } from '../services/scoreService';
 import { getUserDisplayInfo } from '../utils/userUtils';
 
 interface GameOverModalProps {

@@ -207,7 +207,7 @@ export default function AuthComponent({ onAuthStateChange }: AuthComponentProps)
           <div className="auth-switch">
             {authMode === 'signin' ? (
               <>
-                <p>Don't have an account?</p>
+                <p>Don&apos;t have an account?</p>
                 <button
                   onClick={() => setAuthMode('signup')}
                   className="auth-link"
@@ -240,7 +240,7 @@ export default function AuthComponent({ onAuthStateChange }: AuthComponentProps)
             🎮 Play as Guest
           </button>
           <p className="guest-note">
-            Play without an account. Your scores won't be saved permanently.
+            Play without an account. Your scores won&apos;t be saved permanently.
           </p>
         </div>
       </div>
