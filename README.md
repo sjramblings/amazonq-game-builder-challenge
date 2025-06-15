@@ -1,232 +1,443 @@
-# Phaser Next.js Template
+# AWS Tetris Game 🎮
 
-This is a Phaser 3 project template that uses the Next.js framework. It includes a bridge for React to Phaser game communication, hot-reloading for quick development workflow and scripts to generate production-ready builds.
+A modern Tetris-inspired game built with AWS services, featuring real-time leaderboards, user authentication, and educational AWS service facts. Built with Next.js, Phaser 3, and AWS Amplify.
 
-### Versions
+![AWS Tetris Game Screenshot](screenshot.png)
 
-This template has been updated for:
+## 🚀 Quick Start
 
-- [Phaser 3.90.0](https://github.com/phaserjs/phaser)
-- [Next.js 15.3.1](https://github.com/vercel/next.js)
-- [TypeScript 5](https://github.com/microsoft/TypeScript)
+### Prerequisites
 
-![screenshot](screenshot.png)
+- [Node.js](https://nodejs.org) (v18 or higher)
+- [AWS Account](https://aws.amazon.com/free/)
+- [AWS CLI](https://aws.amazon.com/cli/) configured with appropriate permissions
 
-## Requirements
+### Installation
 
-[Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd amazonq-game-builder-challenge
+   ```
 
-## Available Commands
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-| Command | Description |
-|---------|-------------|
-| `npm install` | Install project dependencies |
-| `npm run dev` | Launch a development web server |
-| `npm run build` | Create a production build in the `dist` folder |
-| `npm run dev-nolog` | Launch a development web server without sending anonymous data (see "About log.js" below) |
-| `npm run build-nolog` | Create a production build in the `dist` folder without sending anonymous data (see "About log.js" below) |
+3. **Set up AWS Amplify Gen 2**
+   ```bash
+   # Deploy the backend (Amplify Gen 2)
+   npx ampx sandbox
+   
+   # Or for production deployment
+   npx ampx pipeline-deploy --branch main
+   ```
 
-## Writing Code
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-After cloning the repo, run `npm install` from your project directory. Then, you can start the local development server by running `npm run dev`.
+5. **Open your browser**
+   Navigate to `http://localhost:8080`
 
-The local development server runs on `http://localhost:8080` by default. Please see the Next.js documentation if you wish to change this, or add SSL support.
+## 🎯 Features
 
-Once the server is running you can edit any of the files in the `src` folder. Next.js will automatically recompile your code and then reload the browser.
+- **🎮 Classic Tetris Gameplay** - Familiar controls with modern enhancements
+- **🔐 User Authentication** - Sign up, sign in, and guest play options
+- **🏆 Real-time Leaderboards** - Global high scores with user rankings
+- **📚 Educational Content** - Learn about AWS services while playing
+- **🎨 AWS-themed Pieces** - Each Tetris piece represents an AWS service
+- **📱 Responsive Design** - Works on desktop and mobile devices
+- **⚡ Real-time Updates** - Live score updates and leaderboard refresh
 
-## Template Project Structure
+## 🏗️ Architecture Overview
 
-We have provided a default project structure to get you started. This is as follows:
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   AWS Amplify   │    │   AWS Services  │
+│   (Next.js)     │◄──►│   Backend       │◄──►│   (DynamoDB)    │
+│   - Game Logic  │    │   - Auth        │    │   - Data Store  │
+│   - UI/UX       │    │   - GraphQL API │    │   - Real-time   │
+│   - Phaser 3    │    │   - Real-time   │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
-| Path                          | Description                                                                 |
-|-------------------------------|-----------------------------------------------------------------------------|
-| `src/pages/_document.tsx`     | A basic Next.js component entry point. It is used to define the `<html>` and `<body>` tags and other globally shared UI. |
-| `src`                         | Contains the Next.js client source code.                                   |
-| `src/styles/globals.css`      | Some simple global CSS rules to help with page layout. You can enable Tailwind CSS here. |
-| `src/page/_app.tsx`           | The main Next.js component.                                                |
-| `src/App.tsx`                 | Middleware component used to run Phaser in client mode.                    |
-| `src/PhaserGame.tsx`          | The React component that initializes the Phaser Game and serves as a bridge between React and Phaser. |
-| `src/game/EventBus.ts`        | A simple event bus to communicate between React and Phaser.                |
-| `src/game`                    | Contains the game source code.                                             |
-| `src/game/main.tsx`           | The main **game** entry point. This contains the game configuration and starts the game. |
-| `src/game/scenes/`            | The Phaser Scenes are in this folder.                                      |
-| `public/favicon.png`          | The default favicon for the project.                                       |
-| `public/assets`               | Contains the static assets used by the game.                               |
+## 📁 Project Structure
 
+```
+amplify/                # AWS Amplify Gen 2 backend
+├── auth/
+│   └── resource.ts         # Authentication configuration
+├── data/
+│   └── resource.ts         # Data schema and API configuration
+├── backend.ts              # Backend definition
+├── package.json            # Amplify dependencies
+└── tsconfig.json           # TypeScript configuration
+src/
+├── components/          # React components
+│   ├── AuthComponent.tsx      # User authentication UI
+│   ├── GameOverModal.tsx      # Game over screen with scores
+│   └── Scoreboard.tsx         # Leaderboard display
+├── game/               # Phaser 3 game engine
+│   ├── scenes/         # Game scenes
+│   │   ├── AWSTetricsGame.ts  # Main game logic
+│   │   ├── Boot.ts            # Initial loading
+│   │   ├── MainMenu.ts        # Menu screen
+│   │   └── Preloader.ts       # Asset loading
+│   ├── EventBus.ts     # React-Phaser communication
+│   └── main.ts         # Game configuration
+├── services/           # Business logic services
+│   └── scoreService.ts # Score management
+├── utils/              # Utility functions
+│   └── userUtils.ts    # User management helpers
+├── data/               # Static data
+│   └── awsServiceFacts.ts     # Educational content
+└── pages/              # Next.js pages
+    ├── _app.tsx        # App wrapper
+    ├── _document.tsx   # HTML document
+    └── index.tsx       # Home page
+```
 
-## React Bridge
+## 🧩 Component Documentation
 
-The `PhaserGame.tsx` component is the bridge between React and Phaser. It initializes the Phaser game and passes events between the two.
+### 🎮 Game Components
 
-To communicate between React and Phaser, you can use the **EventBus.js** file. This is a simple event bus that allows you to emit and listen for events from both React and Phaser.
+#### AWSTetricsGame.ts
+The main game engine built with Phaser 3.
 
-```js
-// In React
-import { EventBus } from './EventBus';
+**Key Features:**
+- **Tetris Logic**: Piece movement, rotation, line clearing
+- **AWS Integration**: Each piece represents an AWS service
+- **Scoring System**: Points based on lines cleared and level
+- **Progressive Difficulty**: Speed increases with level
 
-// Emit an event
-EventBus.emit('event-name', data);
+**Key Methods:**
+```typescript
+// Core game loop
+update(time: number, delta: number): void
 
-// In Phaser
-// Listen for an event
-EventBus.on('event-name', (data) => {
-    // Do something with the data
+// Handle user input
+handleInput(): void
+
+// Check for completed lines
+checkLines(): void
+
+// Spawn new pieces
+spawnPiece(): void
+```
+
+**AWS Service Pieces:**
+- **Lambda** (T-piece): Serverless compute
+- **S3** (Square): Object storage  
+- **API Gateway** (L-piece): API management
+- **DynamoDB** (Z-piece): NoSQL database
+- **CloudFormation** (I-piece): Infrastructure as Code
+- **EC2** (J-piece): Virtual servers
+- **CloudWatch** (S-piece): Monitoring
+
+#### EventBus.ts
+Communication bridge between React and Phaser.
+
+```typescript
+// Emit events from React to Phaser
+EventBus.emit('pause-game');
+
+// Listen for events from Phaser in React
+EventBus.on('game-over', (score) => {
+  // Handle game over
 });
 ```
 
-In addition to this, the `PhaserGame` component exposes the Phaser game instance along with the most recently active Phaser Scene using React forwardRef.
+### 🔐 Authentication Components
 
-Once exposed, you can access them like any regular react reference.
+#### AuthComponent.tsx
+Handles user authentication with AWS Cognito.
 
-## Phaser Scene Handling
+**Features:**
+- Sign up with email verification
+- Sign in with existing accounts
+- Guest play mode
+- Password reset functionality
 
-In Phaser, the Scene is the lifeblood of your game. It is where you sprites, game logic and all of the Phaser systems live. You can also have multiple scenes running at the same time. This template provides a way to obtain the current active scene from React.
+**Key Functions:**
+```typescript
+// Sign up new user
+const handleSignUp = async (email: string, password: string)
 
-You can get the current Phaser Scene from the component event `"current-active-scene"`. In order to do this, you need to emit the event `"current-scene-ready"` from the Phaser Scene class. This event should be emitted when the scene is ready to be used. You can see this done in all of the Scenes in our template.
+// Sign in existing user  
+const handleSignIn = async (email: string, password: string)
 
-**Important**: When you add a new Scene to your game, make sure you expose to React by emitting the `"current-scene-ready"` event via the `EventBus`, like this:
+// Confirm email verification
+const handleConfirmSignUp = async (email: string, code: string)
+```
 
+#### userUtils.ts
+User management utilities for display names and user info.
 
-```ts
-class MyScene extends Phaser.Scene
-{
-    constructor ()
-    {
-        super('MyScene');
-    }
+```typescript
+// Get friendly display name from user data
+export async function getUserDisplayInfo(user: any): Promise<UserDisplayInfo>
 
-    create ()
-    {
-        // Your Game Objects and logic here
+// Quick display name extraction
+export function getQuickDisplayName(user: any): string
+```
 
-        // At the end of create method:
-        EventBus.emit('current-scene-ready', this);
-    }
+### 📊 Data Components
+
+#### ScoreService.ts
+Manages high scores and leaderboard functionality.
+
+**Key Methods:**
+```typescript
+// Save a new score
+static async saveScore(gameScore: GameScore, currentUser?: any): Promise<boolean>
+
+// Get top scores for leaderboard
+static async getTopScores(limit: number = 10): Promise<GameScore[]>
+```
+
+**Score Data Structure:**
+```typescript
+interface GameScore {
+  playerName: string;
+  score: number;
+  level: number;
+  linesCleared: number;
+  gameDate: string;
+  userId?: string;
 }
 ```
 
-You don't have to emit this event if you don't need to access the specific scene from React. Also, you don't have to emit it at the end of `create`, you can emit it at any point. For example, should your Scene be waiting for a network request or API call to complete, it could emit the event once that data is ready.
+#### Scoreboard.tsx
+Real-time leaderboard display component.
 
-### React Component Example
+**Features:**
+- Auto-refresh every 30 seconds
+- Highlight current user's scores
+- Responsive design for mobile/desktop
+- Loading states and error handling
 
-Here's an example of how to access Phaser data for use in a React Component:
+### 📚 Educational Components
 
-```ts
-import { useRef } from 'react';
-import { IRefPhaserGame } from "./game/PhaserGame";
+#### awsServiceFacts.ts
+Educational content about AWS services.
 
-// In a parent component
-const ReactComponent = () => {
-
-    const phaserRef = useRef<IRefPhaserGame>(); // you can access to this ref from phaserRef.current
-
-    const onCurrentActiveScene = (scene: Phaser.Scene) => {
-    
-        // This is invoked
-
-    }
-
-    return (
-        ...
-        <PhaserGame ref={phaserRef} currentActiveScene={onCurrentActiveScene} />
-        ...
-    );
-
+**Data Structure:**
+```typescript
+interface AWSServiceFact {
+  service: string;        // Service name
+  iconPath: string;       // Path to service icon
+  fact: string;          // Interesting fact
+  category: string;       // Service category
+  launchYear: number;     // When service launched
 }
 ```
 
-In the code above, you can get a reference to the current Phaser Game instance and the current Scene by creating a reference with `useRef()` and assign to PhaserGame component.
-
-From this state reference, the game instance is available via `phaserRef.current.game` and the most recently active Scene via `phaserRef.current.scene`.
-
-The `onCurrentActiveScene` callback will also be invoked whenever the the Phaser Scene changes, as long as you emit the event via the EventBus, as outlined above.
-
-## Handling Assets
-
-To load your static games files such as audio files, images, videos, etc place them into the `public/assets` folder. Then you can use this path in the Loader calls within Phaser:
-
-```js
-preload ()
-{
-    //  This is an example of loading a static image
-    //  from the public/assets folder:
-    this.load.image('background', 'assets/bg.png');
+**Example Fact:**
+```typescript
+LAMBDA: {
+  service: "AWS Lambda",
+  iconPath: "/assets/aws-icons/Lambda.png",
+  fact: "AWS Lambda can automatically scale from zero to thousands of concurrent executions in seconds!",
+  category: "Serverless Compute",
+  launchYear: 2014
 }
 ```
 
-When you issue the `npm run build` command, all static assets are automatically copied to the `dist/assets` folder.
+## 🛠️ AWS Services Used
 
-## Deploying to Production
+### AWS Amplify Gen 2
+**Purpose**: Full-stack development platform with code-first approach
+- **Authentication**: User sign-up, sign-in, and management via Cognito
+- **API**: GraphQL API with real-time subscriptions
+- **Data**: Type-safe data layer with DynamoDB
+- **Hosting**: Static site hosting and CI/CD
 
-After you run the `npm run build` command, your code will be built into a single bundle and saved to the `dist` folder, along with any other assets your project imported, or stored in the public assets folder.
+**Gen 2 Benefits:**
+- **Code-first approach**: Define your backend using TypeScript
+- **Type safety**: Full-stack type safety from backend to frontend
+- **Local development**: `npx ampx sandbox` for local backend development
+- **Git-based deployments**: Automatic deployments via Git branches
+- **No CLI required**: Everything defined in code, no separate CLI configuration
 
-In order to deploy your game, you will need to upload *all* of the contents of the `dist` folder to a public facing web server.
+**Backend Structure:**
+```typescript
+// amplify/backend.ts
+import { defineBackend } from '@aws-amplify/backend';
+import { auth } from './auth/resource';
+import { data } from './data/resource';
 
-## Customizing the Template
+defineBackend({
+  auth,
+  data,
+});
+```
 
-### Next.js
+### Amazon DynamoDB
+**Purpose**: NoSQL database for storing game scores
+- **Table**: Stores player scores, names, and game statistics
+- **Real-time**: Supports real-time queries for leaderboards
+- **Scalability**: Automatically scales with user demand
 
-If you want to customize your build, such as adding plugin (i.e. for loading CSS or fonts), you can modify the `next.config.mjs` file for cross-project changes, or you can modify and/or create new configuration files and target them in specific npm tasks inside of `package.json`. Please see the [Next.js documentation](https://nextjs.org/docs) for more information.
+### Amazon Cognito
+**Purpose**: User authentication and management
+- **User Pools**: Manage user accounts and authentication
+- **Email Verification**: Secure account creation process
+- **Guest Access**: Allow anonymous gameplay
 
-## About log.js
+## 🎮 Game Controls
 
-If you inspect our node scripts you will see there is a file called `log.js`. This file makes a single silent API call to a domain called `gryzor.co`. This domain is owned by Phaser Studio Inc. The domain name is a homage to one of our favorite retro games.
+| Key | Action |
+|-----|--------|
+| ← → | Move piece left/right |
+| ↓ | Soft drop (faster fall) |
+| ↑ | Rotate piece |
+| Space | Hard drop (instant fall) |
+| P | Pause/Resume game |
+| R | Restart game (when game over) |
 
-We send the following 3 pieces of data to this API: The name of the template being used (vue, react, etc). If the build was 'dev' or 'prod' and finally the version of Phaser being used.
+## 🏆 Scoring System
 
-At no point is any personal data collected or sent. We don't know about your project files, device, browser or anything else. Feel free to inspect the `log.js` file to confirm this.
+- **Single Line**: 100 × level
+- **Double Lines**: 300 × level  
+- **Triple Lines**: 500 × level
+- **Tetris (4 lines)**: 800 × level
+- **Soft Drop**: 1 point per cell
+- **Hard Drop**: 2 points per cell
 
-Why do we do this? Because being open source means we have no visible metrics about which of our templates are being used. We work hard to maintain a large and diverse set of templates for Phaser developers and this is our small anonymous way to determine if that work is actually paying off, or not. In short, it helps us ensure we're building the tools for you.
+## 🔧 Configuration
 
-However, if you don't want to send any data, you can use these commands instead:
+### Environment Variables
+Amplify Gen 2 automatically generates the configuration file:
+```typescript
+// amplify_outputs.json is auto-generated
+// No manual environment variables needed for Amplify Gen 2
+```
 
-Dev:
+For custom environment variables, create a `.env.local` file:
+```env
+# Custom environment variables (if needed)
+NEXT_PUBLIC_CUSTOM_VARIABLE=your-value
+```
 
+### Game Settings
+Modify game settings in `src/game/scenes/AWSTetricsGame.ts`:
+```typescript
+// Board dimensions
+private readonly BOARD_WIDTH = 10;
+private readonly BOARD_HEIGHT = 20;
+
+// Initial game speed
+private dropInterval: number = 1000; // milliseconds
+
+// Level progression
+private readonly LINES_PER_LEVEL = 10;
+```
+
+## 🚀 Deployment
+
+### Development
 ```bash
-npm run dev-nolog
+npm run dev        # Start development server
+npm run dev-nolog  # Start without analytics logging
 ```
 
-Build:
-
+### Production
 ```bash
-npm run build-nolog
+npm run build      # Build for production
+npm run build-nolog # Build without analytics logging
 ```
 
-Or, to disable the log entirely, simply delete the file `log.js` and remove the call to it in the `scripts` section of `package.json`:
+### AWS Amplify Hosting
+```bash
+# Deploy to AWS
+npx ampx pipeline-deploy --branch main
 
-Before:
-
-```json
-"scripts": {
-    "dev": "node log.js dev & dev-template-script",
-    "build": "node log.js build & build-template-script"
-},
+# Or use the Amplify Console for CI/CD
+# Connect your GitHub repository for automatic deployments
 ```
 
-After:
+## 🧪 Testing
 
-```json
-"scripts": {
-    "dev": "dev-template-script",
-    "build": "build-template-script"
-},
+### Manual Testing Checklist
+- [ ] User can sign up with email
+- [ ] Email verification works
+- [ ] User can sign in
+- [ ] Guest mode works
+- [ ] Game controls respond correctly
+- [ ] Scores save to leaderboard
+- [ ] Leaderboard updates in real-time
+- [ ] AWS service facts display correctly
+- [ ] Game works on mobile devices
+
+### Performance Testing
+- [ ] Game runs at 60 FPS
+- [ ] No memory leaks during extended play
+- [ ] Fast loading times
+- [ ] Responsive UI interactions
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Build Errors**
+```bash
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
 ```
 
-Either of these will stop `log.js` from running. If you do decide to do this, please could you at least join our Discord and tell us which template you're using! Or send us a quick email. Either will be super-helpful, thank you.
+**Amplify Issues**
+```bash
+# Reset Amplify backend
+npx ampx sandbox delete
+npx ampx sandbox
+```
 
-## Join the Phaser Community!
+**Game Performance**
+- Check browser console for errors
+- Ensure hardware acceleration is enabled
+- Close other browser tabs to free memory
 
-We love to see what developers like you create with Phaser! It really motivates us to keep improving. So please join our community and show-off your work 😄
+### Debug Mode
+Enable debug logging by adding to localStorage:
+```javascript
+localStorage.setItem('debug', 'true');
+```
 
-**Visit:** The [Phaser website](https://phaser.io) and follow on [Phaser Twitter](https://twitter.com/phaser_)<br />
-**Play:** Some of the amazing games [#madewithphaser](https://twitter.com/search?q=%23madewithphaser&src=typed_query&f=live)<br />
-**Learn:** [API Docs](https://newdocs.phaser.io), [Support Forum](https://phaser.discourse.group/) and [StackOverflow](https://stackoverflow.com/questions/tagged/phaser-framework)<br />
-**Discord:** Join us on [Discord](https://discord.gg/phaser)<br />
-**Code:** 2000+ [Examples](https://labs.phaser.io)<br />
-**Read:** The [Phaser World](https://phaser.io/community/newsletter) Newsletter<br />
+## 🤝 Contributing
 
-Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, pixels and love.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-The Phaser logo and characters are &copy; 2011 - 2025 Phaser Studio Inc.
+### Code Style
+- Use TypeScript for all new code
+- Follow ESLint configuration
+- Add JSDoc comments for public methods
+- Write descriptive commit messages
 
-All rights reserved.
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Phaser 3** - Amazing game development framework
+- **Next.js** - React framework for production
+- **AWS Amplify** - Full-stack development platform
+- **AWS Services** - Powering the backend infrastructure
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](../../issues)
+- **Discussions**: [GitHub Discussions](../../discussions)
+- **AWS Documentation**: [AWS Amplify Docs](https://docs.amplify.aws/)
+
+---
+
+**Built with ❤️ using AWS services and modern web technologies**
