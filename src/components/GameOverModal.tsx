@@ -1,8 +1,6 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { ScoreService, GameScore } from '../services/scoreService';
-import { getUserDisplayInfo } from '../utils/userUtils';
+import React, { useState, useEffect } from 'react';
+import { ScoreService } from '../services/ScoreService';
+import { GameScore } from '../types/GameScore';
 
 interface GameOverModalProps {
   isVisible: boolean;
@@ -30,42 +28,36 @@ export default function GameOverModal({
   const [playerName, setPlayerName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
-  const [isHighScore, setIsHighScore] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [isHighScore, setIsHighScore] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
-      // Reset state when modal opens
+      // Reset states when modal opens
       setScoreSaved(false);
       setSaveError('');
       setIsSaving(false);
       
-      // Pre-populate player name with user's display name
-      const initializePlayerName = async () => {
-        if (currentUser) {
-          try {
-            const displayInfo = await getUserDisplayInfo(currentUser);
-            setPlayerName(displayInfo.displayName);
-          } catch (error) {
-            console.log('Could not get display name:', error);
-            setPlayerName(currentUser.username === 'Guest' ? 'Guest Player' : 'Player');
-          }
-        } else {
-          setPlayerName('Guest Player');
-        }
-      };
-      
-      initializePlayerName();
+      // Set player name from current user
+      if (currentUser?.attributes?.['custom:display_name']) {
+        setPlayerName(currentUser.attributes['custom:display_name']);
+      } else if (currentUser?.username) {
+        setPlayerName(currentUser.username);
+      } else {
+        setPlayerName('Anonymous Player');
+      }
 
       // Check if this is a high score
       checkHighScore();
     }
-  }, [isVisible, currentUser]);
+  }, [isVisible, currentUser, score]);
 
   const checkHighScore = async () => {
     try {
-      const isHigh = await ScoreService.isHighScore(score);
-      setIsHighScore(isHigh);
+      const scores = await ScoreService.getTopScores(10);
+      if (scores.length === 0 || score > Math.max(...scores.map(s => s.score))) {
+        setIsHighScore(true);
+      }
     } catch (error) {
       console.error('Error checking high score:', error);
     }
@@ -102,7 +94,6 @@ export default function GameOverModal({
 
   const handleRestart = () => {
     onRestart();
-    onClose();
   };
 
   if (!isVisible) return null;
@@ -113,9 +104,7 @@ export default function GameOverModal({
         <div className="game-over-header">
           <h2>🎮 Game Over!</h2>
           {isHighScore && (
-            <div className="high-score-badge">
-              🏆 High Score!
-            </div>
+            <div className="high-score-badge">🏆 NEW HIGH SCORE! 🏆</div>
           )}
         </div>
 
@@ -138,7 +127,13 @@ export default function GameOverModal({
         {lastServiceFact && (
           <div className="aws-service-fact">
             <div className="fact-header">
-              <span className="service-icon">{lastServiceFact.icon}</span>
+              <div className="service-icon">
+                <img 
+                  src={lastServiceFact.iconPath} 
+                  alt={lastServiceFact.service}
+                  className="aws-service-svg"
+                />
+              </div>
               <div className="service-info">
                 <h3>{lastServiceFact.service}</h3>
                 <span className="service-category">{lastServiceFact.category} • Since {lastServiceFact.launchYear}</span>
@@ -278,8 +273,6 @@ export default function GameOverModal({
           margin-bottom: 8px;
           font-weight: 500;
         }
-          font-size: 16px;
-        }
 
         .stat-value {
           color: white;
@@ -320,7 +313,6 @@ export default function GameOverModal({
         }
 
         .service-icon {
-          font-size: 36px;
           background: rgba(255, 255, 255, 0.1);
           padding: 12px;
           border-radius: 50%;
@@ -330,6 +322,13 @@ export default function GameOverModal({
           min-width: 60px;
           height: 60px;
           flex-shrink: 0;
+          border: 2px solid rgba(255, 153, 0, 0.3);
+        }
+
+        .aws-service-svg {
+          width: 36px;
+          height: 36px;
+          filter: brightness(0) saturate(100%) invert(60%) sepia(98%) saturate(1352%) hue-rotate(15deg) brightness(101%) contrast(101%);
         }
 
         .service-info {
@@ -372,14 +371,11 @@ export default function GameOverModal({
         }
 
         .save-score-section {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 12px;
-          padding: 20px;
-          margin-bottom: 30px;
+          margin-bottom: 25px;
         }
 
         .save-score-section h3 {
-          color: white;
+          color: #3498db;
           margin: 0 0 20px 0;
           text-align: center;
           font-size: 20px;
@@ -416,7 +412,7 @@ export default function GameOverModal({
 
         .save-button {
           width: 100%;
-          padding: 12px;
+          padding: 14px;
           background: linear-gradient(45deg, #27ae60, #2ecc71);
           color: white;
           border: none;
@@ -428,24 +424,19 @@ export default function GameOverModal({
         }
 
         .save-button:hover:not(:disabled) {
+          background: linear-gradient(45deg, #2ecc71, #27ae60);
           transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
         }
 
         .save-button:disabled {
-          background: #7f8c8d;
+          opacity: 0.6;
           cursor: not-allowed;
           transform: none;
-          box-shadow: none;
         }
 
         .score-saved-section {
-          background: rgba(46, 204, 113, 0.2);
-          border: 2px solid #2ecc71;
-          border-radius: 12px;
-          padding: 20px;
-          margin-bottom: 30px;
           text-align: center;
+          margin-bottom: 25px;
         }
 
         .success-message {
@@ -458,6 +449,16 @@ export default function GameOverModal({
         .score-saved-section p {
           color: #bdc3c7;
           margin: 0;
+        }
+
+        .error-message {
+          color: #e74c3c;
+          background: rgba(231, 76, 60, 0.1);
+          border: 1px solid rgba(231, 76, 60, 0.3);
+          padding: 10px;
+          border-radius: 5px;
+          margin-bottom: 15px;
+          text-align: center;
         }
 
         .action-buttons {
@@ -484,18 +485,18 @@ export default function GameOverModal({
         }
 
         .restart-button:hover {
+          background: linear-gradient(45deg, #2980b9, #3498db);
           transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
         }
 
         .scoreboard-button {
-          background: linear-gradient(45deg, #9b59b6, #8e44ad);
+          background: linear-gradient(45deg, #f39c12, #e67e22);
           color: white;
         }
 
         .scoreboard-button:hover {
+          background: linear-gradient(45deg, #e67e22, #f39c12);
           transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
         }
 
         .close-button {
@@ -504,19 +505,8 @@ export default function GameOverModal({
         }
 
         .close-button:hover {
+          background: linear-gradient(45deg, #7f8c8d, #95a5a6);
           transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
-        }
-
-        .error-message {
-          background: rgba(231, 76, 60, 0.2);
-          border: 1px solid #e74c3c;
-          color: #e74c3c;
-          padding: 10px;
-          border-radius: 6px;
-          margin-bottom: 15px;
-          font-size: 14px;
-          text-align: center;
         }
 
         @media (max-width: 600px) {
@@ -525,16 +515,18 @@ export default function GameOverModal({
             margin: 10px;
           }
 
-          .action-buttons {
-            flex-direction: column;
-          }
-
-          .action-buttons button {
-            min-width: auto;
-          }
-
           .game-over-header h2 {
             font-size: 28px;
+          }
+
+          .aws-service-svg {
+            width: 32px;
+            height: 32px;
+          }
+
+          .service-icon {
+            min-width: 50px;
+            height: 50px;
           }
         }
       `}</style>

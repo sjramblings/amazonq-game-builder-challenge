@@ -517,7 +517,8 @@ export class AWSTetricsGame extends Scene {
         this.score = 0;
         this.level = 1;
         this.lines = 0;
-        this.dropTime = 1000;
+        this.dropTime = 0; // Reset to 0 for manual timing
+        this.dropInterval = 1000; // Reset drop interval
         this.lastPlacedService = null;
         
         // Hide game over text
@@ -535,7 +536,7 @@ export class AWSTetricsGame extends Scene {
             this.dropTimer.destroy();
         }
         this.dropTimer = this.time.addEvent({
-            delay: this.dropTime,
+            delay: this.dropInterval,
             callback: this.dropPiece,
             callbackScope: this,
             loop: true
