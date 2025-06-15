@@ -39,15 +39,13 @@ export default function GameOverModal({
       setSaveError('');
       setIsSaving(false);
       
-      // Set player name from current user
-      if (currentUser?.attributes?.['custom:display_name']) {
-        setPlayerName(currentUser.attributes['custom:display_name']);
-      } else if (currentUser?.username) {
-        setPlayerName(currentUser.username);
-      } else {
-        setPlayerName('Anonymous Player');
-      }
-
+      // Set player name using getUserDisplayInfo for consistency with ScoreService
+      getUserDisplayInfo(currentUser)
+        .then(displayInfo => setPlayerName(displayInfo.displayName))
+        .catch(error => {
+          console.error("Error getting display name:", error);
+          setPlayerName("Anonymous Player");
+        });
       // Check if this is a high score
       checkHighScore();
     }
