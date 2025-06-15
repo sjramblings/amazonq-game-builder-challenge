@@ -248,6 +248,9 @@ function App() {
                     height: calc(100vh - 60px);
                     position: relative;
                     overflow: hidden;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
                 }
 
                 @media (max-width: 768px) {

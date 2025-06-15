@@ -85,18 +85,21 @@ export class AWSTetricsGame extends Scene {
     private pauseText!: Phaser.GameObjects.Text;
     private awsLogoText!: Phaser.GameObjects.Text;
     
-    // Game constants
-    private readonly BOARD_WIDTH = 10;
-    private readonly BOARD_HEIGHT = 20;
-    private readonly BLOCK_SIZE = 30;
-    private readonly BOARD_X = 50;
-    private readonly BOARD_Y = 80;
+    // Game constants - now responsive
+    private readonly BASE_BOARD_WIDTH = 10;
+    private readonly BASE_BOARD_HEIGHT = 20;
+    private BLOCK_SIZE = 30;
+    private BOARD_X = 50;
+    private BOARD_Y = 80;
 
     constructor() {
         super('AWSTetricsGame');
     }
 
     create() {
+        // Calculate responsive dimensions
+        this.calculateResponsiveDimensions();
+        
         // Initialize game board
         this.initializeBoard();
         
@@ -115,6 +118,41 @@ export class AWSTetricsGame extends Scene {
         // Emit scene ready event
         EventBus.emit('current-scene-ready', this);
     }
+
+    private calculateResponsiveDimensions() {
+        const scaleX = this.scale.width / 1024; // Base width
+        const scaleY = this.scale.height / 768;  // Base height
+        const scale = Math.min(scaleX, scaleY);
+        
+        // Responsive block size with better constraints
+        this.BLOCK_SIZE = Math.max(18, Math.min(35, 28 * scale));
+        
+        // Calculate board dimensions
+        const boardWidth = this.BASE_BOARD_WIDTH * this.BLOCK_SIZE;
+        const boardHeight = this.BASE_BOARD_HEIGHT * this.BLOCK_SIZE;
+        
+        // Better positioning - leave more space for UI on the right
+        const availableWidth = this.scale.width - 300; // Reserve 300px for UI
+        this.BOARD_X = Math.max(20, (availableWidth - boardWidth) / 2);
+        this.BOARD_Y = Math.max(80, (this.scale.height - boardHeight) * 0.15);
+        
+        // Ensure board doesn't go off screen
+        if (this.BOARD_X + boardWidth > this.scale.width - 280) {
+            this.BOARD_X = Math.max(20, this.scale.width - boardWidth - 280);
+        }
+        
+        if (this.BOARD_Y + boardHeight > this.scale.height - 50) {
+            this.BOARD_Y = Math.max(50, this.scale.height - boardHeight - 50);
+            // If still doesn't fit, reduce block size
+            if (this.BOARD_Y + boardHeight > this.scale.height - 50) {
+                this.BLOCK_SIZE = Math.max(15, (this.scale.height - 150) / this.BASE_BOARD_HEIGHT);
+                this.BOARD_Y = Math.max(50, (this.scale.height - this.BASE_BOARD_HEIGHT * this.BLOCK_SIZE) / 2);
+            }
+        }
+    }
+
+    private get BOARD_WIDTH() { return this.BASE_BOARD_WIDTH; }
+    private get BOARD_HEIGHT() { return this.BASE_BOARD_HEIGHT; }
 
     private initializeBoard() {
         this.board = Array(this.BOARD_HEIGHT).fill(null).map(() => Array(this.BOARD_WIDTH).fill(0));
@@ -145,148 +183,82 @@ export class AWSTetricsGame extends Scene {
     }
 
     private createUI() {
-        const uiX = this.BOARD_X + this.BOARD_WIDTH * this.BLOCK_SIZE + 50;
+        const uiX = this.getUIX();
+        const scale = this.getUIScale();
         
         // AWS Tetrics Title
-        this.awsLogoText = this.add.text(this.cameras.main.centerX, 20, '☁️ AWS TETRICS ☁️', { 
-            fontSize: '32px', 
+        this.awsLogoText = this.add.text(this.scale.width / 2, this.getTitleY(), '☁️ AWS TETRICS ☁️', { 
+            fontSize: this.getTitleFontSize() + 'px', 
             color: '#FF9900',
             fontFamily: 'Arial Black',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: Math.max(1, Math.floor(2 * scale))
         }).setOrigin(0.5);
 
         // Score display
-        this.add.text(uiX, 120, 'SCORE', { 
-            fontSize: '24px', 
+        this.add.text(uiX, this.getScoreY(), 'SCORE', { 
+            fontSize: this.getHeaderFontSize() + 'px', 
             color: '#FFFFFF',
             fontFamily: 'Arial Black'
         });
-        this.scoreText = this.add.text(uiX, 150, '0', { 
-            fontSize: '32px', 
+        this.scoreText = this.add.text(uiX, this.getScoreValueY(), '0', { 
+            fontSize: this.getValueFontSize() + 'px', 
             color: '#FF9900',
             fontFamily: 'Arial Black'
         });
 
         // Level display
-        this.add.text(uiX, 200, 'LEVEL', { 
-            fontSize: '24px', 
+        this.add.text(uiX, this.getLevelY(), 'LEVEL', { 
+            fontSize: this.getHeaderFontSize() + 'px', 
             color: '#FFFFFF',
             fontFamily: 'Arial Black'
         });
-        this.levelText = this.add.text(uiX, 230, '1', { 
-            fontSize: '32px', 
+        this.levelText = this.add.text(uiX, this.getLevelValueY(), '1', { 
+            fontSize: this.getValueFontSize() + 'px', 
             color: '#3F8624',
             fontFamily: 'Arial Black'
         });
 
         // Lines display
-        this.add.text(uiX, 280, 'LINES', { 
-            fontSize: '24px', 
+        this.add.text(uiX, this.getLinesY(), 'LINES', { 
+            fontSize: this.getHeaderFontSize() + 'px', 
             color: '#FFFFFF',
             fontFamily: 'Arial Black'
         });
-        this.linesText = this.add.text(uiX, 310, '0', { 
-            fontSize: '32px', 
+        this.linesText = this.add.text(uiX, this.getLinesValueY(), '0', { 
+            fontSize: this.getValueFontSize() + 'px', 
             color: '#3F48CC',
             fontFamily: 'Arial Black'
         });
 
         // Current service display
-        this.add.text(uiX, 360, 'CURRENT SERVICE', { 
-            fontSize: '18px', 
+        this.add.text(uiX, this.getCurrentServiceY(), 'CURRENT SERVICE', { 
+            fontSize: this.getServiceHeaderFontSize() + 'px', 
             color: '#FFFFFF',
             fontFamily: 'Arial'
         });
-        this.currentServiceText = this.add.text(uiX, 385, '', { 
-            fontSize: '16px', 
+        this.currentServiceText = this.add.text(uiX, this.getCurrentServiceValueY(), '', { 
+            fontSize: this.getServiceFontSize() + 'px', 
             color: '#FF9900',
             fontFamily: 'Arial',
-            wordWrap: { width: 200 }
+            wordWrap: { width: this.getServiceTextWidth() }
         });
 
         // Next piece display
-        this.add.text(uiX, 440, 'NEXT SERVICE', { 
-            fontSize: '18px', 
+        this.add.text(uiX, this.getNextServiceY(), 'NEXT SERVICE', { 
+            fontSize: this.getServiceHeaderFontSize() + 'px', 
             color: '#FFFFFF',
             fontFamily: 'Arial'
         });
-        this.nextServiceText = this.add.text(uiX, 465, '', { 
-            fontSize: '16px', 
+        this.nextServiceText = this.add.text(uiX, this.getNextServiceValueY(), '', { 
+            fontSize: this.getServiceFontSize() + 'px', 
             color: '#FF9900',
             fontFamily: 'Arial',
-            wordWrap: { width: 200 }
+            wordWrap: { width: this.getServiceTextWidth() }
         });
 
-        // Controls
-        this.add.text(uiX, 550, 'CONTROLS:', { 
-            fontSize: '18px', 
-            color: '#FF9900',
-            fontFamily: 'Arial Black'
-        });
-        this.add.text(uiX, 580, '← → Move', { 
-            fontSize: '14px', 
-            color: '#CCCCCC',
-            fontFamily: 'Arial'
-        });
-        this.add.text(uiX, 600, '↓ Soft Drop', { 
-            fontSize: '14px', 
-            color: '#CCCCCC',
-            fontFamily: 'Arial'
-        });
-        this.add.text(uiX, 620, '↑ Rotate', { 
-            fontSize: '14px', 
-            color: '#CCCCCC',
-            fontFamily: 'Arial'
-        });
-        this.add.text(uiX, 640, 'SPACE Hard Drop', { 
-            fontSize: '14px', 
-            color: '#CCCCCC',
-            fontFamily: 'Arial'
-        });
-        this.add.text(uiX, 660, 'P Pause', { 
-            fontSize: '14px', 
-            color: '#CCCCCC',
-            fontFamily: 'Arial'
-        });
-
-        // AWS Branding
-        this.add.text(uiX, 720, 'Powered by AWS ☁️', { 
-            fontSize: '14px', 
-            color: '#FF9900',
-            fontFamily: 'Arial',
-            fontStyle: 'italic'
-        });
-
-        // Game over text (hidden initially)
-        this.gameOverText = this.add.text(
-            this.cameras.main.centerX, 
-            this.cameras.main.centerY, 
-            'GAME OVER\n☁️ AWS Services Deployed! ☁️\nPress R to Restart', 
-            { 
-                fontSize: '36px', 
-                color: '#FF4B4B',
-                fontFamily: 'Arial Black',
-                align: 'center',
-                stroke: '#000000',
-                strokeThickness: 2
-            }
-        ).setOrigin(0.5).setVisible(false);
-
-        // Pause text (hidden initially)
-        this.pauseText = this.add.text(
-            this.cameras.main.centerX, 
-            this.cameras.main.centerY, 
-            'PAUSED\n☁️ Services on Standby ☁️\nPress P to Resume', 
-            { 
-                fontSize: '36px', 
-                color: '#FF9900',
-                fontFamily: 'Arial Black',
-                align: 'center',
-                stroke: '#000000',
-                strokeThickness: 2
-            }
-        ).setOrigin(0.5).setVisible(false);
+        this.createControlsUI(uiX);
+        this.createGameOverUI();
     }
 
     private setupInput() {
@@ -587,19 +559,23 @@ export class AWSTetricsGame extends Scene {
         this.nextPieceGraphics.clear();
         
         if (this.nextPiece) {
-            const previewX = this.BOARD_X + this.BOARD_WIDTH * this.BLOCK_SIZE + 50;
-            const previewY = 490;
+            const previewX = this.getUIX();
+            const previewY = this.getNextServiceValueY() + Math.max(25, 35 * this.getUIScale());
+            const previewScale = 0.6;
             
-            for (let y = 0; y < this.nextPiece.shape.length; y++) {
-                for (let x = 0; x < this.nextPiece.shape[y].length; x++) {
-                    if (this.nextPiece.shape[y][x]) {
-                        this.drawAWSBlock(
-                            this.nextPieceGraphics,
-                            previewX + x * (this.BLOCK_SIZE * 0.7),
-                            previewY + y * (this.BLOCK_SIZE * 0.7),
-                            this.nextPiece.color,
-                            0.7
-                        );
+            // Only render if there's space
+            if (previewY + 100 < this.scale.height) {
+                for (let y = 0; y < this.nextPiece.shape.length; y++) {
+                    for (let x = 0; x < this.nextPiece.shape[y].length; x++) {
+                        if (this.nextPiece.shape[y][x]) {
+                            this.drawAWSBlock(
+                                this.nextPieceGraphics,
+                                previewX + x * (this.BLOCK_SIZE * previewScale),
+                                previewY + y * (this.BLOCK_SIZE * previewScale),
+                                this.nextPiece.color,
+                                previewScale
+                            );
+                        }
                     }
                 }
             }
@@ -635,6 +611,223 @@ export class AWSTetricsGame extends Scene {
             graphics.fillCircle(centerX - 4, centerY, 2);
             graphics.fillCircle(centerX + 4, centerY, 2);
         }
+    }
+
+    // Responsive helper methods
+    private getUIScale() {
+        const scaleX = this.scale.width / 1024;
+        const scaleY = this.scale.height / 768;
+        return Math.min(scaleX, scaleY);
+    }
+
+    private getUIX() {
+        const boardWidth = this.BOARD_WIDTH * this.BLOCK_SIZE;
+        const availableWidth = this.scale.width - (this.BOARD_X + boardWidth);
+        const minSpacing = 30;
+        
+        // Ensure minimum spacing from board and don't go too far right
+        return Math.min(
+            this.BOARD_X + boardWidth + minSpacing,
+            this.scale.width - 250 // Reserve space for UI elements
+        );
+    }
+
+    private getTitleY() {
+        return Math.max(30, 40 * this.getUIScale());
+    }
+
+    private getTitleFontSize() {
+        return Math.max(20, Math.min(36, 28 * this.getUIScale()));
+    }
+
+    private getScoreY() {
+        return Math.max(100, 140 * this.getUIScale());
+    }
+
+    private getScoreValueY() {
+        return this.getScoreY() + Math.max(25, 35 * this.getUIScale());
+    }
+
+    private getLevelY() {
+        return this.getScoreValueY() + Math.max(40, 60 * this.getUIScale());
+    }
+
+    private getLevelValueY() {
+        return this.getLevelY() + Math.max(25, 35 * this.getUIScale());
+    }
+
+    private getLinesY() {
+        return this.getLevelValueY() + Math.max(40, 60 * this.getUIScale());
+    }
+
+    private getLinesValueY() {
+        return this.getLinesY() + Math.max(25, 35 * this.getUIScale());
+    }
+
+    private getCurrentServiceY() {
+        return this.getLinesValueY() + Math.max(50, 80 * this.getUIScale());
+    }
+
+    private getCurrentServiceValueY() {
+        return this.getCurrentServiceY() + Math.max(20, 30 * this.getUIScale());
+    }
+
+    private getNextServiceY() {
+        return this.getCurrentServiceValueY() + Math.max(50, 80 * this.getUIScale());
+    }
+
+    private getNextServiceValueY() {
+        return this.getNextServiceY() + Math.max(20, 30 * this.getUIScale());
+    }
+
+    private getHeaderFontSize() {
+        return Math.max(14, Math.min(24, 20 * this.getUIScale()));
+    }
+
+    private getValueFontSize() {
+        return Math.max(18, Math.min(32, 28 * this.getUIScale()));
+    }
+
+    private getServiceHeaderFontSize() {
+        return Math.max(12, Math.min(18, 16 * this.getUIScale()));
+    }
+
+    private getServiceFontSize() {
+        return Math.max(10, Math.min(16, 14 * this.getUIScale()));
+    }
+
+    private getServiceTextWidth() {
+        const availableWidth = this.scale.width - this.getUIX() - 20;
+        return Math.max(150, Math.min(250, availableWidth));
+    }
+
+    private createControlsUI(uiX: number) {
+        const controlsStartY = this.getNextServiceValueY() + Math.max(60, 100 * this.getUIScale());
+        const controlsFontSize = Math.max(12, Math.min(18, 16 * this.getUIScale()));
+        const controlsItemFontSize = Math.max(10, Math.min(14, 12 * this.getUIScale()));
+        const lineSpacing = Math.max(18, 25 * this.getUIScale());
+
+        // Only show controls if there's enough space
+        if (controlsStartY + 200 > this.scale.height) {
+            return; // Skip controls if not enough vertical space
+        }
+
+        this.add.text(uiX, controlsStartY, 'CONTROLS:', { 
+            fontSize: controlsFontSize + 'px', 
+            color: '#FF9900',
+            fontFamily: 'Arial Black'
+        });
+        
+        const controls = [
+            '← → Move',
+            '↓ Drop', 
+            '↑ Rotate',
+            'SPACE Fast Drop',
+            'P Pause'
+        ];
+
+        controls.forEach((control, index) => {
+            const yPos = controlsStartY + (index + 1) * lineSpacing;
+            if (yPos < this.scale.height - 50) { // Only show if fits on screen
+                this.add.text(uiX, yPos, control, { 
+                    fontSize: controlsItemFontSize + 'px', 
+                    color: '#CCCCCC',
+                    fontFamily: 'Arial'
+                });
+            }
+        });
+
+        // AWS Branding - only if space available
+        const brandingY = controlsStartY + (controls.length + 2) * lineSpacing;
+        if (brandingY < this.scale.height - 30) {
+            this.add.text(uiX, brandingY, 'Powered by AWS ☁️', { 
+                fontSize: controlsItemFontSize + 'px', 
+                color: '#FF9900',
+                fontFamily: 'Arial',
+                fontStyle: 'italic'
+            });
+        }
+    }
+
+    private createGameOverUI() {
+        const gameOverFontSize = Math.max(18, Math.min(48, 36 * this.getUIScale()));
+        
+        // Game over text (hidden initially)
+        this.gameOverText = this.add.text(
+            this.scale.width / 2, 
+            this.scale.height / 2, 
+            'GAME OVER\n☁️ AWS Services Deployed! ☁️\nPress R to Restart', 
+            { 
+                fontSize: gameOverFontSize + 'px', 
+                color: '#FF4B4B',
+                fontFamily: 'Arial Black',
+                align: 'center',
+                stroke: '#000000',
+                strokeThickness: Math.max(1, Math.floor(2 * this.getUIScale()))
+            }
+        ).setOrigin(0.5).setVisible(false);
+
+        // Pause text (hidden initially)
+        this.pauseText = this.add.text(
+            this.scale.width / 2, 
+            this.scale.height / 2, 
+            'PAUSED\n☁️ Services on Standby ☁️\nPress P to Resume', 
+            { 
+                fontSize: gameOverFontSize + 'px', 
+                color: '#FF9900',
+                fontFamily: 'Arial Black',
+                align: 'center',
+                stroke: '#000000',
+                strokeThickness: Math.max(1, Math.floor(2 * this.getUIScale()))
+            }
+        ).setOrigin(0.5).setVisible(false);
+    }
+
+    // Resize method called when screen size changes
+    public resize() {
+        // Recalculate responsive dimensions
+        this.calculateResponsiveDimensions();
+        
+        // Clear and recreate graphics
+        this.boardGraphics.clear();
+        this.nextPieceGraphics.clear();
+        
+        // Recreate board border
+        this.boardGraphics.lineStyle(3, 0xFF9900);
+        this.boardGraphics.strokeRect(
+            this.BOARD_X - 3, 
+            this.BOARD_Y - 3, 
+            this.BOARD_WIDTH * this.BLOCK_SIZE + 6, 
+            this.BOARD_HEIGHT * this.BLOCK_SIZE + 6
+        );
+
+        // Clear all existing UI elements and recreate them
+        this.children.removeAll();
+        
+        // Recreate graphics objects
+        this.boardGraphics = this.add.graphics();
+        this.nextPieceGraphics = this.add.graphics();
+        
+        // Recreate board border
+        this.boardGraphics.lineStyle(3, 0xFF9900);
+        this.boardGraphics.strokeRect(
+            this.BOARD_X - 3, 
+            this.BOARD_Y - 3, 
+            this.BOARD_WIDTH * this.BLOCK_SIZE + 6, 
+            this.BOARD_HEIGHT * this.BLOCK_SIZE + 6
+        );
+        
+        // Recreate all UI elements with new positions
+        this.createUI();
+        
+        // Update service displays
+        this.updateServiceDisplays();
+        
+        // Update score display
+        this.updateUI();
+
+        // Re-render the game
+        this.render();
     }
 
     // Public method to get current game state

@@ -70,14 +70,10 @@ export default function GameOverModal({
   };
 
   const handleSaveScore = async () => {
-    if (!playerName.trim()) {
-      setSaveError('Please enter a player name');
-      return;
-    }
-
     setIsSaving(true);
     setSaveError('');
 
+    // Use the pre-populated display name from user account
     const gameScore: GameScore = {
       playerName: playerName.trim(),
       score,
@@ -139,17 +135,12 @@ export default function GameOverModal({
         {!scoreSaved ? (
           <div className="save-score-section">
             <h3>Save Your Score</h3>
-            <div className="player-name-input">
-              <label htmlFor="playerName">Player Name:</label>
-              <input
-                type="text"
-                id="playerName"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Enter your name"
-                maxLength={20}
-                disabled={isSaving}
-              />
+            <div className="player-name-display">
+              <label>Playing as:</label>
+              <div className="player-name-value">{playerName}</div>
+              <small className="player-name-note">
+                Display name set during account creation
+              </small>
             </div>
             
             {saveError && (
@@ -158,10 +149,10 @@ export default function GameOverModal({
 
             <button
               onClick={handleSaveScore}
-              disabled={isSaving || !playerName.trim()}
+              disabled={isSaving}
               className="save-button"
             >
-              {isSaving ? 'Saving...' : 'Save Score'}
+              {isSaving ? 'Saving...' : 'Save Score to Leaderboard'}
             </button>
           </div>
         ) : (
@@ -169,7 +160,7 @@ export default function GameOverModal({
             <div className="success-message">
               ✅ Score saved successfully!
             </div>
-            <p>Your score has been added to the leaderboard.</p>
+            <p>Your score has been added to the leaderboard as <strong>{playerName}</strong>.</p>
           </div>
         )}
 
@@ -291,35 +282,33 @@ export default function GameOverModal({
           font-size: 20px;
         }
 
-        .player-name-input {
+        .player-name-display {
           margin-bottom: 20px;
+          text-align: center;
         }
 
-        .player-name-input label {
+        .player-name-display label {
           display: block;
           color: #bdc3c7;
           margin-bottom: 8px;
           font-size: 14px;
         }
 
-        .player-name-input input {
-          width: 100%;
-          padding: 12px;
+        .player-name-value {
+          background: rgba(255, 255, 255, 0.1);
           border: 2px solid rgba(255, 255, 255, 0.2);
           border-radius: 8px;
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
-          font-size: 16px;
-          transition: border-color 0.3s;
+          padding: 12px;
+          color: #3498db;
+          font-size: 18px;
+          font-weight: bold;
+          margin-bottom: 5px;
         }
 
-        .player-name-input input:focus {
-          outline: none;
-          border-color: #3498db;
-        }
-
-        .player-name-input input::placeholder {
-          color: rgba(255, 255, 255, 0.5);
+        .player-name-note {
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 12px;
+          font-style: italic;
         }
 
         .save-button {
