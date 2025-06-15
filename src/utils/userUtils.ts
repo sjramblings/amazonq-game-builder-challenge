@@ -76,9 +76,17 @@ export function getQuickDisplayInfo(user: any): UserDisplayInfo {
       email: user.username,
     };
   } else if (user.username && user.username !== user.userId) {
-    return {
-      displayName: user.username,
-    };
+    // Check if username is not a UUID before using it
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.username);
+    if (!isUUID) {
+      return {
+        displayName: user.username,
+      };
+    } else {
+      return {
+        displayName: 'Player',
+      };
+    }
   } else {
     return {
       displayName: 'Player',

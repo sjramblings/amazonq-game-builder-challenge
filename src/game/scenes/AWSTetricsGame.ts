@@ -52,7 +52,15 @@ const AWS_SERVICE_NAMES = {
     EC2: 'Amazon EC2',
     CLOUDWATCH: 'CloudWatch'
 };
-
+const AWS_SERVICE_ICONS = {
+    LAMBDA: 'aws-lambda',
+    S3: 'aws-s3',
+    API_GATEWAY: 'aws-api-gateway',
+    DYNAMODB: 'aws-dynamodb',
+    CLOUDFORMATION: 'aws-cloudformation',
+    EC2: 'aws-ec2',
+    CLOUDWATCH: 'aws-cloudwatch'
+};
 interface AWSTetricsePiece {
     shape: number[][];
     x: number;
@@ -63,7 +71,7 @@ interface AWSTetricsePiece {
 }
 
 export class AWSTetricsGame extends Scene {
-    private board: number[][];
+    private board: (null | { color: number; serviceType: keyof typeof AWS_TETRIS_PIECES })[][];
     private currentPiece: AWSTetricsePiece | null = null;
     private nextPiece: AWSTetricsePiece | null = null;
     private lastPlacedService: keyof typeof AWS_TETRIS_PIECES | null = null;
@@ -75,6 +83,8 @@ export class AWSTetricsGame extends Scene {
     private gameOver: boolean = false;
     private isPaused: boolean = false;
     
+    // Service icons for blocks
+    private serviceIcons: Phaser.GameObjects.Image[] = [];    
     // Display elements
     private boardGraphics!: Phaser.GameObjects.Graphics;
     private scoreText!: Phaser.GameObjects.Text;
@@ -157,7 +167,7 @@ export class AWSTetricsGame extends Scene {
     private get BOARD_HEIGHT() { return this.BASE_BOARD_HEIGHT; }
 
     private initializeBoard() {
-        this.board = Array(this.BOARD_HEIGHT).fill(null).map(() => Array(this.BOARD_WIDTH).fill(0));
+        this.board = Array(this.BOARD_HEIGHT).fill(null).map(() => Array(this.BOARD_WIDTH).fill(null));
         this.score = 0;
         this.level = 1;
         this.lines = 0;
@@ -447,7 +457,10 @@ export class AWSTetricsGame extends Scene {
                     const boardY = this.currentPiece.y + y;
                     
                     if (boardY >= 0) {
-                        this.board[boardY][boardX] = this.currentPiece.color;
+                        this.board[boardY][boardX] = {
+                            color: this.currentPiece.color,
+                            serviceType: this.currentPiece.type
+                        };
                     }
                 }
             }
@@ -458,9 +471,9 @@ export class AWSTetricsGame extends Scene {
         let linesCleared = 0;
         
         for (let y = this.BOARD_HEIGHT - 1; y >= 0; y--) {
-            if (this.board[y].every(cell => cell !== 0)) {
+            if (this.board[y].every(cell => cell !== null)) {
                 this.board.splice(y, 1);
-                this.board.unshift(Array(this.BOARD_WIDTH).fill(0));
+                this.board.unshift(Array(this.BOARD_WIDTH).fill(null));
                 linesCleared++;
                 y++; // Check the same line again
             }
@@ -546,6 +559,8 @@ export class AWSTetricsGame extends Scene {
     private render() {
         this.boardGraphics.clear();
         
+        // Clear existing service icons
+        this.clearServiceIcons();        
         // Draw board border with AWS styling
         this.boardGraphics.lineStyle(3, 0xFF9900);
         this.boardGraphics.strokeRect(
@@ -563,7 +578,14 @@ export class AWSTetricsGame extends Scene {
                         this.boardGraphics,
                         this.BOARD_X + x * this.BLOCK_SIZE,
                         this.BOARD_Y + y * this.BLOCK_SIZE,
-                        this.board[y][x]
+                        this.board[y][x].color
+                    );
+                    
+                    // Add service icon
+                    this.addServiceIcon(
+                        this.BOARD_X + x * this.BLOCK_SIZE,
+                        this.BOARD_Y + y * this.BLOCK_SIZE,
+                        this.board[y][x].serviceType
                     );
                 }
             }
@@ -580,7 +602,13 @@ export class AWSTetricsGame extends Scene {
                             this.BOARD_Y + (this.currentPiece.y + y) * this.BLOCK_SIZE,
                             this.currentPiece.color
                         );
-                    }
+                        
+                        // Add service icon for current piece
+                        this.addServiceIcon(
+                            this.BOARD_X + (this.currentPiece.x + x) * this.BLOCK_SIZE,
+                            this.BOARD_Y + (this.currentPiece.y + y) * this.BLOCK_SIZE,
+                            this.currentPiece.type
+                        );                    }
                 }
             }
         }
@@ -607,6 +635,14 @@ export class AWSTetricsGame extends Scene {
                                 previewX + x * (this.BLOCK_SIZE * previewScale),
                                 previewY + y * (this.BLOCK_SIZE * previewScale),
                                 this.nextPiece.color,
+                                previewScale
+                            );
+                            
+                            // Add service icon for next piece preview
+                            this.addServiceIcon(
+                                previewX + x * (this.BLOCK_SIZE * previewScale),
+                                previewY + y * (this.BLOCK_SIZE * previewScale),
+                                this.nextPiece.type,
                                 previewScale
                             );
                         }
@@ -646,7 +682,26 @@ export class AWSTetricsGame extends Scene {
             graphics.fillCircle(centerX + 4, centerY, 2);
         }
     }
+    private clearServiceIcons() {
+        // Remove all existing service icons
+        this.serviceIcons.forEach(icon => icon.destroy());
+        this.serviceIcons = [];
+    }
 
+    private addServiceIcon(x: number, y: number, serviceType: keyof typeof AWS_TETRIS_PIECES, scale: number = 1) {
+        const iconKey = AWS_SERVICE_ICONS[serviceType];
+        if (iconKey) {
+            const size = this.BLOCK_SIZE * scale;
+            const iconSize = Math.max(12, size * 0.6);
+            const iconX = x + size / 2;
+            const iconY = y + size / 2;
+            
+            const icon = this.add.image(iconX, iconY, iconKey);
+            icon.setDisplaySize(iconSize, iconSize);
+            icon.setDepth(10); // Ensure icons are on top
+            this.serviceIcons.push(icon);
+        }
+    }
     // Responsive helper methods
     private getUIScale() {
         const scaleX = this.scale.width / 1024;

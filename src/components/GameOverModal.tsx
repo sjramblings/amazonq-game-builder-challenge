@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScoreService } from '../services/ScoreService';
+import { ScoreService } from '../services/scoreService';
 import { GameScore } from '../types/GameScore';
+import { getUserDisplayInfo } from '../utils/userUtils';
 
 interface GameOverModalProps {
   isVisible: boolean;

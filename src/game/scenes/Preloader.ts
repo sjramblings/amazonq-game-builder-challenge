@@ -34,6 +34,15 @@ export class Preloader extends Scene
 
         this.load.image('logo', 'logo.png');
         this.load.image('star', 'star.png');
+        
+        // Load AWS service icons
+        this.load.image('aws-lambda', 'aws-icons/Lambda.png');
+        this.load.image('aws-s3', 'aws-icons/Simple Storage Service.png');
+        this.load.image('aws-api-gateway', 'aws-icons/API Gateway.png');
+        this.load.image('aws-dynamodb', 'aws-icons/DynamoDB.png');
+        this.load.image('aws-cloudformation', 'aws-icons/CloudFormation.png');
+        this.load.image('aws-ec2', 'aws-icons/EC2.png');
+        this.load.image('aws-cloudwatch', 'aws-icons/CloudWatch.png');
     }
 
     create ()
